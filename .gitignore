@@ -1,0 +1,53 @@
+# Secrets — never commit
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.venv/
+venv/
+env/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Ruff / linting
+.ruff_cache/
+
+# ML / experiment tracking
+mlruns/
+
+# Data / logs / exports / runtime state
+logs/
+exports/
+db/backups/
+db/*.db
+db/adaptive_learning.json
+db/ml_performance.json
+db/strategy_equity.json
+db/ab_tests.json
+db/research_seen.json
+
+# Parquet cache
+*.parquet
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

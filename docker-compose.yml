@@ -1,0 +1,73 @@
+version: "3.9"
+
+services:
+  aria:
+    build: .
+    container_name: aria-trading
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "8050:8050"   # Plotly Dash dashboard
+      - "8051:8051"   # FastAPI REST server
+    volumes:
+      - ./db:/app/db
+      - ./logs:/app/logs
+      - aria-obsidian:/vault   # optional: mount Obsidian vault
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DB_PATH=/app/db/aria.db
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - aria-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8050/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL for production (optional — ARIA uses SQLite by default)
+  postgres:
+    image: postgres:16-alpine
+    container_name: aria-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       aria
+      POSTGRES_USER:     aria
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-aria_secret}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - aria-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aria"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for caching / pub-sub (optional)
+  redis:
+    image: redis:7-alpine
+    container_name: aria-redis
+    restart: unless-stopped
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    networks:
+      - aria-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-data:
+  aria-obsidian:
+
+networks:
+  aria-net:
+    driver: bridge
